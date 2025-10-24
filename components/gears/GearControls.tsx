@@ -18,6 +18,8 @@ interface GearControlsProps {
   onShowInfoToggle: () => void;
   selectedTeeth: number;
   onSelectedTeethChange: (teeth: number) => void;
+  smartSnap: boolean;
+  onSmartSnapToggle: () => void;
 }
 
 export default function GearControls({
@@ -33,6 +35,8 @@ export default function GearControls({
   onShowInfoToggle,
   selectedTeeth,
   onSelectedTeethChange,
+  smartSnap,
+  onSmartSnapToggle,
 }: GearControlsProps) {
   const driverGear = gears.find((g) => g.isDriver);
   const outputGear = gears.length > 0 ? gears[gears.length - 1] : null;
@@ -237,8 +241,8 @@ export default function GearControls({
 
       {/* Display Options */}
       <div>
-        <h3 className="font-semibold mb-3 text-gray-700">Display</h3>
-        <label className="flex items-center gap-2 cursor-pointer">
+        <h3 className="font-semibold mb-3 text-gray-700">Options</h3>
+        <label className="flex items-center gap-2 cursor-pointer mb-2">
           <input
             type="checkbox"
             checked={showInfo}
@@ -246,6 +250,15 @@ export default function GearControls({
             className="w-4 h-4"
           />
           <span className="text-sm">Show RPM & Torque</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={smartSnap}
+            onChange={onSmartSnapToggle}
+            className="w-4 h-4"
+          />
+          <span className="text-sm">Smart Snap (auto-mesh)</span>
         </label>
       </div>
     </div>

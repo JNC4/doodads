@@ -15,6 +15,7 @@ export default function GearsPage() {
   const [inputTorque, setInputTorque] = useState(10);
   const [showInfo, setShowInfo] = useState(true);
   const [selectedTeeth, setSelectedTeeth] = useState(30);
+  const [smartSnap, setSmartSnap] = useState(true);
 
   // Update gear motion when driver changes or input changes
   useEffect(() => {
@@ -30,8 +31,8 @@ export default function GearsPage() {
     if (target.tagName === 'CANVAS') {
       const canvas = target as HTMLCanvasElement;
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
 
       // Check if clicking on an existing gear - if so, don't spawn
       const clickedOnGear = gears.some((gear) => {
@@ -42,6 +43,38 @@ export default function GearsPage() {
 
       if (clickedOnGear) {
         return; // Don't spawn if clicking on existing gear
+      }
+
+      const newGearRadius = (selectedTeeth * 8) / 2;
+
+      // Smart snap: find nearest gear and snap to perfect mesh position
+      if (smartSnap && gears.length > 0) {
+        let closestGear: Gear | null = null;
+        let closestDist = Infinity;
+
+        for (const gear of gears) {
+          const gearRadius = (gear.teeth * 8) / 2;
+          const dist = Math.sqrt(
+            Math.pow(x - gear.position.x, 2) + Math.pow(y - gear.position.y, 2)
+          );
+
+          // Check if within snap range (within 100px of ideal meshing distance)
+          const idealDist = gearRadius + newGearRadius;
+          if (Math.abs(dist - idealDist) < 100 && dist < closestDist) {
+            closestGear = gear;
+            closestDist = dist;
+          }
+        }
+
+        // Snap to closest gear
+        if (closestGear) {
+          const gearRadius = (closestGear.teeth * 8) / 2;
+          const idealDist = gearRadius + newGearRadius;
+          const angle = Math.atan2(y - closestGear.position.y, x - closestGear.position.x);
+
+          x = closestGear.position.x + idealDist * Math.cos(angle);
+          y = closestGear.position.y + idealDist * Math.sin(angle);
+        }
       }
 
       const newGear: Gear = {
@@ -126,6 +159,8 @@ export default function GearsPage() {
             onShowInfoToggle={() => setShowInfo(!showInfo)}
             selectedTeeth={selectedTeeth}
             onSelectedTeethChange={setSelectedTeeth}
+            smartSnap={smartSnap}
+            onSmartSnapToggle={() => setSmartSnap(!smartSnap)}
           />
         </div>
       </div>

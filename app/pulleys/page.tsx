@@ -166,7 +166,7 @@ export default function PulleysPage() {
               <input
                 type="range"
                 min="1"
-                max="500"
+                max="1000"
                 step="1"
                 value={effortForce}
                 onChange={(e) => setEffortForce(Number(e.target.value))}

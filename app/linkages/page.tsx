@@ -21,83 +21,108 @@ export default function LinkagesPage() {
       const interval = setInterval(() => {
         setTime((t) => t + 0.02 * speed);
 
-        // Solve four-bar linkage
-        const updatedJoints = [...joints];
+        // Deep clone joints to avoid mutation
+        const updatedJoints = joints.map(j => ({ ...j, position: { ...j.position } }));
 
         // Find the two fixed joints (ground link)
         const fixedJoints = updatedJoints.filter(j => j.isFixed);
-        if (fixedJoints.length === 2) {
+
+        if (fixedJoints.length >= 2) {
           // Find the driver link (crank)
           const driverLink = links.find((l) => l.isDriver);
           if (driverLink) {
-            // Position the crank endpoint
-            const crankBase = fixedJoints[0];
-            const crankAngle = time;
-            const crankEndX = crankBase.position.x + driverLink.length * Math.cos(crankAngle);
-            const crankEndY = crankBase.position.y + driverLink.length * Math.sin(crankAngle);
+            // Find the crank base (fixed joint)
+            const crankBaseId = driverLink.joint1Id;
+            const crankBase = updatedJoints.find(j => j.id === crankBaseId && j.isFixed);
 
-            const crankEndJoint = updatedJoints.find(j => j.id === driverLink.joint2Id);
-            if (crankEndJoint && !crankEndJoint.isFixed) {
-              crankEndJoint.position = { x: crankEndX, y: crankEndY };
-            }
+            if (crankBase) {
+              // Position the crank endpoint by rotating around base
+              const crankAngle = time;
+              const crankEndX = crankBase.position.x + driverLink.length * Math.cos(crankAngle);
+              const crankEndY = crankBase.position.y + driverLink.length * Math.sin(crankAngle);
 
-            // Find the coupler link (connects crank to rocker)
-            const couplerLink = links.find(l =>
-              !l.isDriver &&
-              (l.joint1Id === driverLink.joint2Id || l.joint2Id === driverLink.joint2Id)
-            );
+              const crankEndJoint = updatedJoints.find(j => j.id === driverLink.joint2Id);
+              if (crankEndJoint && !crankEndJoint.isFixed) {
+                crankEndJoint.position = { x: crankEndX, y: crankEndY };
 
-            if (couplerLink) {
-              // Find the rocker link (connects to other fixed joint)
-              const rockerBase = fixedJoints[1];
-              const rockerLink = links.find(l =>
-                !l.isDriver &&
-                (l.joint1Id === rockerBase.id || l.joint2Id === rockerBase.id) &&
-                l.id !== couplerLink.id
-              );
-
-              if (rockerLink) {
-                // Solve for intersection point (coupler-rocker connection)
-                const d = Math.sqrt(
-                  Math.pow(crankEndX - rockerBase.position.x, 2) +
-                  Math.pow(crankEndY - rockerBase.position.y, 2)
+                // Find the coupler link (connects crank end to coupler point)
+                const couplerLink = links.find(l =>
+                  !l.isDriver &&
+                  (l.joint1Id === crankEndJoint.id || l.joint2Id === crankEndJoint.id) &&
+                  !updatedJoints.find(j => j.id === l.joint1Id)?.isFixed &&
+                  !updatedJoints.find(j => j.id === l.joint2Id)?.isFixed
                 );
 
-                const a = (couplerLink.length ** 2 - rockerLink.length ** 2 + d ** 2) / (2 * d);
-                const h = Math.sqrt(Math.max(0, couplerLink.length ** 2 - a ** 2));
+                if (couplerLink) {
+                  // Find the other end of coupler (the coupler point)
+                  const couplerPointId = couplerLink.joint1Id === crankEndJoint.id
+                    ? couplerLink.joint2Id
+                    : couplerLink.joint1Id;
+                  const couplerPoint = updatedJoints.find(j => j.id === couplerPointId);
 
-                const px = crankEndX + (a / d) * (rockerBase.position.x - crankEndX);
-                const py = crankEndY + (a / d) * (rockerBase.position.y - crankEndY);
+                  // Find the rocker link (from other fixed point to coupler point)
+                  const rockerBase = fixedJoints.find(f => f.id !== crankBase.id);
+                  if (rockerBase && couplerPoint) {
+                    const rockerLink = links.find(l =>
+                      (l.joint1Id === rockerBase.id && l.joint2Id === couplerPoint.id) ||
+                      (l.joint2Id === rockerBase.id && l.joint1Id === couplerPoint.id)
+                    );
 
-                // Choose the solution that maintains continuity
-                const intersectionX = px + (h / d) * (rockerBase.position.y - crankEndY);
-                const intersectionY = py - (h / d) * (rockerBase.position.x - crankEndX);
+                    if (rockerLink) {
+                      // Solve for coupler point using circle-circle intersection
+                      const dx = rockerBase.position.x - crankEndX;
+                      const dy = rockerBase.position.y - crankEndY;
+                      const dist = Math.sqrt(dx * dx + dy * dy);
 
-                // Update the coupler/rocker connection joint
-                const connectionJoint = updatedJoints.find(j =>
-                  !j.isFixed &&
-                  j.id !== crankEndJoint?.id &&
-                  (j.id === couplerLink.joint1Id || j.id === couplerLink.joint2Id ||
-                   j.id === rockerLink.joint1Id || j.id === rockerLink.joint2Id)
-                );
+                      // Check if solution exists
+                      if (dist <= couplerLink.length + rockerLink.length &&
+                          dist >= Math.abs(couplerLink.length - rockerLink.length)) {
 
-                if (connectionJoint) {
-                  connectionJoint.position = { x: intersectionX, y: intersectionY };
+                        const a = (couplerLink.length ** 2 - rockerLink.length ** 2 + dist ** 2) / (2 * dist);
+                        const h = Math.sqrt(Math.max(0, couplerLink.length ** 2 - a ** 2));
 
-                  // Track path
-                  if (showPaths) {
-                    setTracePoints((prev) => {
-                      const existing = prev.find((p) => p.jointId === connectionJoint.id);
-                      if (existing) {
-                        const newPath = [...existing.path, { x: intersectionX, y: intersectionY }];
-                        if (newPath.length > 300) newPath.shift();
-                        return prev.map((p) =>
-                          p.jointId === connectionJoint.id ? { ...p, path: newPath } : p
+                        const px = crankEndX + (a / dist) * dx;
+                        const py = crankEndY + (a / dist) * dy;
+
+                        // Two possible solutions - pick one that maintains continuity
+                        const sol1X = px - (h / dist) * dy;
+                        const sol1Y = py + (h / dist) * dx;
+                        const sol2X = px + (h / dist) * dy;
+                        const sol2Y = py - (h / dist) * dx;
+
+                        // Choose solution closer to previous position
+                        const dist1 = Math.sqrt(
+                          Math.pow(sol1X - couplerPoint.position.x, 2) +
+                          Math.pow(sol1Y - couplerPoint.position.y, 2)
                         );
-                      } else {
-                        return [...prev, { jointId: connectionJoint.id, path: [{ x: intersectionX, y: intersectionY }] }];
+                        const dist2 = Math.sqrt(
+                          Math.pow(sol2X - couplerPoint.position.x, 2) +
+                          Math.pow(sol2Y - couplerPoint.position.y, 2)
+                        );
+
+                        if (dist1 < dist2) {
+                          couplerPoint.position = { x: sol1X, y: sol1Y };
+                        } else {
+                          couplerPoint.position = { x: sol2X, y: sol2Y };
+                        }
+
+                        // Track path
+                        if (showPaths) {
+                          setTracePoints((prev) => {
+                            const existing = prev.find((p) => p.jointId === couplerPoint.id);
+                            if (existing) {
+                              const newPath = [...existing.path, { ...couplerPoint.position }];
+                              if (newPath.length > 300) newPath.shift();
+                              return prev.map((p) =>
+                                p.jointId === couplerPoint.id ? { ...p, path: newPath } : p
+                              );
+                            } else {
+                              return [...prev, { jointId: couplerPoint.id, path: [{ ...couplerPoint.position }] }];
+                            }
+                          });
+                        }
                       }
-                    });
+                    }
                   }
                 }
               }
