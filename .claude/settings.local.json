@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app:*)",
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Mechanical Systems Playground\n\nComplete interactive web application with three modes:\n- Gear Train Designer with ratio calculations\n- Linkage Mechanism Playground with motion paths\n- Pulley System Optimizer with force analysis\n\nFeatures:\n- Interactive canvas-based simulations\n- Real-time physics calculations\n- Multiple presets for each mode\n- Educational visualizations\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
