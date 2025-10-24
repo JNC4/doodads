@@ -149,7 +149,7 @@ Contributions welcome! Feel free to:
 
 ## 🔗 Links
 
-- **Live Demo**: [Deployed on Vercel](https://doodads.vercel.app) _(coming soon)_
+- **Live Demo**: [https://doodads.vercel.app](https://doodads.vercel.app)
 - **GitHub**: [https://github.com/JNC4/doodads](https://github.com/JNC4/doodads)
 
 ## 🙏 Acknowledgments
