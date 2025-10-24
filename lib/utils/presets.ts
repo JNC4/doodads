@@ -6,7 +6,7 @@ export const gearPresets: Record<string, GearPreset> = {
     description: '2 gears (60T → 20T = 3:1 speedup)',
     gears: [
       { teeth: 60, position: { x: 200, y: 300 }, type: 'spur', isDriver: true },
-      { teeth: 20, position: { x: 400, y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 20, position: { x: 200 + (60 * 8 / 2) + (20 * 8 / 2), y: 300 }, type: 'spur', isDriver: false },
     ],
   },
   compound: {
@@ -14,9 +14,9 @@ export const gearPresets: Record<string, GearPreset> = {
     description: '4 gears achieving high ratio (9:1)',
     gears: [
       { teeth: 60, position: { x: 150, y: 300 }, type: 'spur', isDriver: true },
-      { teeth: 20, position: { x: 350, y: 300 }, type: 'spur', isDriver: false },
-      { teeth: 60, position: { x: 350, y: 300 }, type: 'spur', isDriver: false },
-      { teeth: 20, position: { x: 550, y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 20, position: { x: 150 + (60 * 8 / 2) + (20 * 8 / 2), y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 60, position: { x: 150 + (60 * 8 / 2) + (20 * 8 / 2), y: 200 }, type: 'spur', isDriver: false },
+      { teeth: 20, position: { x: 150 + (60 * 8 / 2) + (20 * 8 / 2) + (60 * 8 / 2) + (20 * 8 / 2), y: 200 }, type: 'spur', isDriver: false },
     ],
   },
   clockwork: {
@@ -24,9 +24,9 @@ export const gearPresets: Record<string, GearPreset> = {
     description: 'Hour/minute hand ratios (12:1 and 60:1)',
     gears: [
       { teeth: 10, position: { x: 200, y: 300 }, type: 'spur', isDriver: true },
-      { teeth: 40, position: { x: 320, y: 300 }, type: 'spur', isDriver: false },
-      { teeth: 10, position: { x: 320, y: 300 }, type: 'spur', isDriver: false },
-      { teeth: 60, position: { x: 480, y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 40, position: { x: 200 + (10 * 8 / 2) + (40 * 8 / 2), y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 10, position: { x: 200 + (10 * 8 / 2) + (40 * 8 / 2), y: 200 }, type: 'spur', isDriver: false },
+      { teeth: 60, position: { x: 200 + (10 * 8 / 2) + (40 * 8 / 2) + (10 * 8 / 2) + (60 * 8 / 2), y: 200 }, type: 'spur', isDriver: false },
     ],
   },
   bicycle: {
@@ -34,7 +34,7 @@ export const gearPresets: Record<string, GearPreset> = {
     description: 'Chainring to cassette (2.5:1 ratio)',
     gears: [
       { teeth: 40, position: { x: 200, y: 300 }, type: 'spur', isDriver: true },
-      { teeth: 16, position: { x: 500, y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 16, position: { x: 200 + (40 * 8 / 2) + (16 * 8 / 2), y: 300 }, type: 'spur', isDriver: false },
     ],
   },
   reversal: {
@@ -42,8 +42,8 @@ export const gearPresets: Record<string, GearPreset> = {
     description: '3 gears to reverse direction twice',
     gears: [
       { teeth: 30, position: { x: 150, y: 300 }, type: 'spur', isDriver: true },
-      { teeth: 30, position: { x: 330, y: 300 }, type: 'spur', isDriver: false },
-      { teeth: 30, position: { x: 510, y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 30, position: { x: 150 + (30 * 8 / 2) + (30 * 8 / 2), y: 300 }, type: 'spur', isDriver: false },
+      { teeth: 30, position: { x: 150 + 2 * ((30 * 8 / 2) + (30 * 8 / 2)), y: 300 }, type: 'spur', isDriver: false },
     ],
   },
 };

@@ -92,27 +92,38 @@ export default function PulleyCanvas({
       drawLoad(ctx, load);
 
       // Draw force vectors if enabled
-      if (showForces) {
+      if (showForces && pulleys.length > 0) {
+        // Calculate proper effort point (first pulley or effort side)
+        const firstPulley = pulleys[0];
+        const effortPoint = {
+          x: firstPulley.position.x - firstPulley.radius - 40,
+          y: firstPulley.position.y
+        };
+
+        // Scale force vectors to fit on screen (max 150px length)
+        const maxForceDisplayed = Math.max(effortForce, load.weight);
+        const scale = Math.min(150 / maxForceDisplayed, 0.5);
+
         // Effort force (upward)
         drawForceVector(
           ctx,
-          { x: 100, y: 400 },
+          effortPoint,
           effortForce,
           -Math.PI / 2,
           '#4CAF50',
           `Effort: ${effortForce.toFixed(1)}N`,
-          2
+          scale
         );
 
         // Load weight (downward)
         drawForceVector(
           ctx,
-          load.position,
+          { x: load.position.x, y: load.position.y + 40 },
           load.weight,
           Math.PI / 2,
           '#F44336',
           `Weight: ${load.weight.toFixed(1)}N`,
-          0.5
+          scale
         );
       }
 

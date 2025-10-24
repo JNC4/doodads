@@ -33,6 +33,17 @@ export default function GearsPage() {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
 
+      // Check if clicking on an existing gear - if so, don't spawn
+      const clickedOnGear = gears.some((gear) => {
+        const radius = (gear.teeth * 8) / 2; // GEAR_MODULE = 8
+        const dist = Math.sqrt(Math.pow(x - gear.position.x, 2) + Math.pow(y - gear.position.y, 2));
+        return dist <= radius;
+      });
+
+      if (clickedOnGear) {
+        return; // Don't spawn if clicking on existing gear
+      }
+
       const newGear: Gear = {
         id: generateId(),
         teeth: selectedTeeth,
