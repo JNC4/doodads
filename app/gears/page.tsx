@@ -91,7 +91,24 @@ export default function GearsPage() {
         type: 'spur',
       };
 
-      setGears([...gears, newGear]);
+      // Auto-connect to nearby gears
+      const updatedGears = [...gears];
+
+      updatedGears.forEach((gear) => {
+        const gearRadius = (gear.teeth * 8) / 2;
+        const dist = Math.sqrt(
+          Math.pow(x - gear.position.x, 2) + Math.pow(y - gear.position.y, 2)
+        );
+        const idealDist = gearRadius + newGearRadius;
+
+        // If within 5% of ideal meshing distance, connect them
+        if (Math.abs(dist - idealDist) < idealDist * 0.05) {
+          newGear.connectedTo.push(gear.id);
+          gear.connectedTo.push(newGear.id);
+        }
+      });
+
+      setGears([...updatedGears, newGear]);
     }
   };
 
